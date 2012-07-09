@@ -13,11 +13,12 @@
 #include "timer.h"
 
 /* Allocate memory for a timer, and return a pointer. */
-timer *createRTimer(){
+timer *createRTimer() {
 
   /* Allocate and check meory. */
   timer *t = (timer*)malloc(sizeof(timer));
-  if(!t){
+
+  if(!t) {
       perror("malloc");
       exit(1);
   }
@@ -27,21 +28,21 @@ timer *createRTimer(){
 }
 
 /* Start timer. */
-void startRTimer(timer *t){
+void startRTimer(timer *t) {
 
   /* Put the start time in the appropriate struct. */
   gettimeofday(&t->start, NULL);
 }
 
 /* Stop timer. */
-void stopRTimer(timer *t){
+void stopRTimer(timer *t) {
 
   /* Put the endingtime in the appropriate struct. */
   gettimeofday(&t->stop, NULL);
 }
 
 /* Get the timer value as a double */
-double getRTimer(timer *t){
+double getRTimer(timer *t) {
 
   /* Calculate seconds. */
   double sec = t->stop.tv_sec - t->start.tv_sec;
@@ -55,10 +56,8 @@ double getRTimer(timer *t){
 }
 
 /* Function to cleanup properly. */
-void destroyRTimer(timer *t){
- 
+void destroyRTimer(timer *t) {
+
   /* Release the memory. */
   free(t);
 }
-
-

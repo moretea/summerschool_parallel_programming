@@ -2,8 +2,8 @@
  * Summerschool Getting Moore From Multicores
  *
  * Assignment 1 - Introduction to image filters.
- * 
- * main.c 30-06-2011 
+ *
+ * main.c 30-06-2011
  *
  * (c) 2011 Roy Bakker & Raphael 'kena' Poss - University of Amsterdam
  *     Based on a framework by Aram Visser and Roeland Douma
@@ -23,9 +23,8 @@
 #include "filters.h"
 
 static inline
-size_t min(size_t a, size_t b)
-{
-    return a < b ? a : b;
+size_t min(size_t a, size_t b) {
+  return a < b ? a : b;
 }
 
 /* The number of filters we have. */
@@ -33,32 +32,30 @@ size_t min(size_t a, size_t b)
 
 /* The names of those filters. */
 typedef img_t* (filter_func)(img_t* in, img_t* out);
-struct filter_info
-{
-    const char *name;
-    filter_func *func;
+struct filter_info {
+  const char  *name;
+  filter_func *func;
 };
 
 /* Information about all filters. */
-                           
 const struct filter_info FILTERS[NUM_FILTERS] = {
-                    { "red", &red },
-                    { "green", &green },
-                    { "blue", &blue },
-                    { "gray", &gray },
-                    { "identity", &identity },
-                    { "invert", &invert },
-                    { "fliph", &fliph },
-                    { "flipv", &flipv },
-                    { "rotate90", &rotate90 },
-                    { "blur9", &blur9 },
-                    { "blur25", &blur25 },
-                    { "sobel", &sobel },
-                    { "contrast", &contrast },
-                    { "sharpen", &sharpen },
-                    { "yourfilter1", &yourfilter1 },
-                    { "yourfilter2", &yourfilter2 },
-                    { "yourfilter3", &yourfilter3 }
+  { "red",         &red },
+  { "green",       &green },
+  { "blue",        &blue },
+  { "gray",        &gray },
+  { "identity",    &identity },
+  { "invert",      &invert },
+  { "fliph",       &fliph },
+  { "flipv",       &flipv },
+  { "rotate90",    &rotate90 },
+  { "blur9",       &blur9 },
+  { "blur25",      &blur25 },
+  { "sobel",       &sobel },
+  { "contrast",    &contrast },
+  { "sharpen",     &sharpen },
+  { "yourfilter1", &yourfilter1 },
+  { "yourfilter2", &yourfilter2 },
+  { "yourfilter3", &yourfilter3 }
 };
 
 /*
@@ -96,17 +93,20 @@ int main(int argc, char **argv) {
 #ifdef MPI
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank); 
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 #endif
 
   /* Parse command line arguments in a quick and easy way. */
-  for(int i = 1; i < argc; i++){
-    if(argv[i][0] == '-' && argv[i][1] != '\0' && argv[i][2] == '\0' && i < argc - 1){
-      switch(argv[i][1]){
-      case 'c': iterations = atoi(argv[i + 1]); break;
-      case 'i': input  = argv[i + 1]; break;
-      case 'o': output = argv[i + 1]; break;
-      case 'f': filter = argv[i + 1]; break;
+  for (int i = 1; i < argc; i++) {
+    if (argv[i][0] == '-' && 
+        argv[i][1] != '\0' && 
+        argv[i][2] == '\0' && 
+        i < argc - 1) {
+      switch(argv[i][1]) {
+        case 'c': iterations = atoi(argv[i + 1]); break;
+        case 'i': input  = argv[i + 1]; break;
+        case 'o': output = argv[i + 1]; break;
+        case 'f': filter = argv[i + 1]; break;
       }
       i++;
     }
@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
   }
 
   /* Print help message. */
-  if(help || !input || !output){
+  if (help || !input || !output) {
     printf(
       "Usage: %s -i INPUT -o OUTPUT [OPTIONS]...\n"
       "  -i FILE      Read the input image from FILE.\n"
@@ -129,25 +129,27 @@ int main(int argc, char **argv) {
       "Valid filter names: "
       , argv[0]);
 
-    for(int i = 0; i < NUM_FILTERS; i++){
-      if(i % 3 == 2){ 
+    for (int i = 0; i < NUM_FILTERS; i++) {
+      if (i % 3 == 2) {
         printf("\n");
       }
+
       printf("%s ", FILTERS[i].name);
-    } 
+    }
 
     printf("\n");
-
-    return(0);
+    return 0;
   }
 
   /* Set function pointer to correct filter. */
-  for(int i = 0; i < NUM_FILTERS; i++){
-    if(0 == strcmp(filter, FILTERS[i].name)){
+  for (int i = 0; i < NUM_FILTERS; i++) {
+    if (0 == strcmp(filter, FILTERS[i].name)) {
       f = FILTERS[i].func;
+      break; /* Break if we find the correct filter */
     }
   }
-  if (f == NULL){
+
+  if (f == NULL) {
       fprintf(stderr, "Unknown filter name: %s\n", filter);
       exit(1);
   }
@@ -162,7 +164,7 @@ int main(int argc, char **argv) {
   /* Print some information. */
   fprintf(stderr,
           "P%d: Parameters: -c %d -i %s -o %s -f %s\n"
-          "P%d: Loading input... \n", 
+          "P%d: Loading input... \n",
           rank, iterations, input, output, filter, rank);
 
   /* Read image and initialize an empty output image. */
@@ -172,15 +174,13 @@ int main(int argc, char **argv) {
   stopRTimer(timer);
   ltime = getRTimer(timer);
 
-
   fprintf(stderr, "P%d: Computing... \n", rank);
 
   /* Apply the image filter iteration times. */
   startRTimer(timer);
-  for(int i = 0; i < iterations; i++) {
-
+  for (int i = 0; i < iterations; i++) {
     /* For multiple iterations, we need to swap input and output. */
-    if(i != 0){
+    if (i != 0) {
       img_t *tmp = in;
       in = out;
       out = tmp;
@@ -189,6 +189,7 @@ int main(int argc, char **argv) {
     /* Call the actual filter function */
     f(in, out);
   }
+
   stopRTimer(timer);
   rtime = getRTimer(timer);
 
@@ -198,18 +199,18 @@ int main(int argc, char **argv) {
   startRTimer(timer);
   handle_output(output, in, out, original);
   stopRTimer(timer);
-  wtime = getRTimer(timer);  
+  wtime = getRTimer(timer);
 
   fprintf(stderr, "P%d: done.\n", rank);
 
   /* Print statistics. */
   printf("P%d: \"%s\" \"%s\" \"%s\" %d %f %f %f\n",
          rank,
-         input, output, filter, iterations, 
-         ltime - ttime, 
-         rtime - ttime, 
+         input, output, filter, iterations,
+         ltime - ttime,
+         rtime - ttime,
          wtime - ttime);
- 
+
   /* Clean up. */
   destroyRTimer(timer);
 
@@ -217,6 +218,5 @@ int main(int argc, char **argv) {
   MPI_Finalize();
 #endif
 
-  return(0);
+  return 0;
 }
-

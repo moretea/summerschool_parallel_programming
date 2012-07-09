@@ -32,8 +32,8 @@
  *     in_data[y*in->w + x].r
  *
  *   To copy all pixel values in a naive way:
- *   for(size_t y = 0; i < in->h; y++){
- *     for(size_t x = 0; x < w; x++){
+ *   for(size_t y = 0; i < in->h; y++) {
+ *     for(size_t x = 0; x < w; x++) {
  *       out_data[y*w + x].r = in_data[y*w + x].r;
  *       out_data[y*w + x].g = in_data[y*w + x].g;
  *       out_data[y*w + x].b = in_data[y*w + x].b;
@@ -70,7 +70,7 @@
  * In this function we handle the input. For a sequential application
  * it works just fine as it is.
  */
-void handle_input(char *input, img_t **in, img_t **out, img_t **original){
+void handle_input(char *input, img_t **in, img_t **out, img_t **original) {
   /* Read input image, memory is automaticaly allocated. */
   img_t *read = readPPM(input);
 
@@ -86,7 +86,7 @@ void handle_input(char *input, img_t **in, img_t **out, img_t **original){
  * In this function we handle the output. For a sequential application
  * it works just fine as it is.
  */
-void handle_output(char *output, img_t *in, img_t *out, img_t *original){
+void handle_output(char *output, img_t *in, img_t *out, img_t *original) {
   /* For sequential code, the data to write is in out. */
   img_t *write = out;
 
@@ -107,7 +107,7 @@ void handle_output(char *output, img_t *in, img_t *out, img_t *original){
  * Exercise 2.2 - 1: Look at the way the data is distributed here.
  *
  */
-void handle_input(char *input, img_t **in, img_t **out, img_t **original){
+void handle_input(char *input, img_t **in, img_t **out, img_t **original) {
   /* Size and rank for MPI. */
   int size, rank;
 
@@ -125,7 +125,7 @@ void handle_input(char *input, img_t **in, img_t **out, img_t **original){
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);  
 
   /* Only one (the first) process reads the input. */
-  if(rank == 0){
+  if(rank == 0) {
 
     /* Read input */
     read = readPPM(input);
@@ -149,7 +149,7 @@ void handle_input(char *input, img_t **in, img_t **out, img_t **original){
    *  so some processes must do an additional row.
    */
   extrarows = dim[1] % size;
-  if(rank < extrarows){
+  if (rank < extrarows) {
     h++;
   }
 
@@ -158,7 +158,7 @@ void handle_input(char *input, img_t **in, img_t **out, img_t **original){
   *out = createPPM(w, h);
  
   /* The first one sends all the processes their data. */
-  if(rank == 0){
+  if (rank == 0) {
 
     /* First copy data for myself. */
     memcpy((*in)->data, read->data, w * h * sizeof(pixel_t));
@@ -167,11 +167,11 @@ void handle_input(char *input, img_t **in, img_t **out, img_t **original){
     index = w * h;
  
     /* Loop over all workers. */
-    for(int i = 1; i < size; i++){
+    for (int i = 1; i < size; i++) {
 
       /* Calculate how many rows this worker gets */
       int height = dim[1] / size;
-      if(i < extrarows){
+      if (i < extrarows) {
         height++;
       }
 
@@ -186,20 +186,18 @@ void handle_input(char *input, img_t **in, img_t **out, img_t **original){
     /* Store a pointer to the original image. */
     *original = read;
 
-  }
-  /* All others just receive */
-  else{
+  } else { /* All others just receive */
+
     MPI_Recv((*in)->data, w * h * sizeof(pixel_t), 
              MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD, NULL);
   }
- 
 }
 
 /* 
  * In this function we handle the output. For a sequential application
  * it works just fine as it is. But how do we handle this with MPI?
  */
-void handle_output(char *output, img_t *in, img_t *out, img_t *original){
+void handle_output(char *output, img_t *in, img_t *out, img_t *original) {
 
   /* Size and rank for MPI. */
   int size, rank;
@@ -237,7 +235,7 @@ void handle_output(char *output, img_t *in, img_t *out, img_t *original){
 
 
   /* Do the write-back once we have gathered all data. */
-  if(rank == 0){
+  if (rank == 0) {
 
     /* Write! */
     writePPM(output, write);
@@ -245,7 +243,6 @@ void handle_output(char *output, img_t *in, img_t *out, img_t *original){
     /* ... and cleanup the memory */
     deletePPM(original);
     deletePPM(write);
-
   }
 
   /* Free memory for both images. */
@@ -260,11 +257,11 @@ void handle_output(char *output, img_t *in, img_t *out, img_t *original){
  */
 
 /* The identity just copies the image. */
-img_t *identity(img_t *in, img_t *out){
+img_t *identity(img_t *in, img_t *out) {
   INIT_DECLS;
 
   /* Loop over all pixels and copy the values. */
-  for(size_t i = 0; i < in_w * in_h; i++){
+  for (size_t i = 0; i < in_w * in_h; i++) {
     out_data[i] = in_data[i];
   }
 
@@ -274,11 +271,11 @@ img_t *identity(img_t *in, img_t *out){
 
 
 /* Invert every pixel in the img_t */
-img_t *invert(img_t *in, img_t *out){
+img_t *invert(img_t *in, img_t *out) {
   INIT_DECLS;
 
   /* Loop over all pixels and invert the rgb values. */
-  for(size_t i = 0; i < in_w * in_h; i++){
+  for (size_t i = 0; i < in_w * in_h; i++) {
     out_data[i].r = 255 - in_data[i].r;
     out_data[i].g = 255 - in_data[i].g;
     out_data[i].b = 255 - in_data[i].b;
@@ -288,19 +285,18 @@ img_t *invert(img_t *in, img_t *out){
   return(out);
 }
 
-
 /*
  * Exercise 1.4 - 1: Compare the performance of the "green" and the "blue"
  * filter. Explain the difference.
  */
 
 /* Make it green. */
-img_t *green(img_t *in, img_t *out){
+img_t *green(img_t *in, img_t *out) {
   INIT_DECLS;
 
   /* Loop over all pixels and copy the green value. */
-  for(size_t j = 0; j < in_h; j++){
-    for(size_t i = 0; i < in_w; i++){
+  for (size_t j = 0; j < in_h; j++) {
+    for (size_t i = 0; i < in_w; i++) {
       out_data[j*in_w + i].r = 0;
       out_data[j*in_w + i].g = in_data[j*in_w + i].g;
       out_data[j*in_w + i].b = 0;
@@ -311,14 +307,13 @@ img_t *green(img_t *in, img_t *out){
   return(out);
 }
 
-
 /* Make it blue. */
-img_t *blue(img_t *in, img_t *out){
+img_t *blue(img_t *in, img_t *out) {
   INIT_DECLS;
 
   /* Loop over all pixels and copy the blue value. */
-  for(size_t i = 0; i < in_w; i++){
-    for(size_t j = 0; j < in_h; j++){
+  for (size_t i = 0; i < in_w; i++) {
+    for (size_t j = 0; j < in_h; j++) {
       out_data[j*in_w + i].r = 0;
       out_data[j*in_w + i].g = 0;
       out_data[j*in_w + i].b = in_data[j*in_w + i].b;
@@ -335,11 +330,11 @@ img_t *blue(img_t *in, img_t *out){
  * Exercise 2.3 - 1: Do we need to modify this for use with MPI?
  *
  */
-img_t *red(img_t *in, img_t *out){
+img_t *red(img_t *in, img_t *out) {
   INIT_DECLS;
 
   /* Loop over all pixels and copy the red value. */
-  for(size_t i = 0; i < in_w * in_h; i++){
+  for (size_t i = 0; i < in_w * in_h; i++) {
     out_data[i].r = in_data[i].r;
     out_data[i].g = 0;
     out_data[i].b = 0;
@@ -355,7 +350,7 @@ img_t *gray(img_t *in, img_t *out){
   INIT_DECLS;
 
   /* Loop over all pixels and calculate mean value, set it */
-  for(size_t i = 0; i < in_w * in_h; i++){
+  for (size_t i = 0; i < in_w * in_h; i++) {
 
     /* 
      * The intensity of the pixel is taken after the YPbPr color model.
@@ -377,7 +372,7 @@ img_t *gray(img_t *in, img_t *out){
 }
 
 /* Flip an image along the horizontal axis */
-img_t *fliph(img_t *in, img_t *out){
+img_t *fliph(img_t *in, img_t *out) {
   INIT_DECLS;
 
   /* Exercise 1.4 - 2: Implement this function body. */
@@ -386,9 +381,8 @@ img_t *fliph(img_t *in, img_t *out){
   return(out);
 }
 
-
 /* Flip an image along the vertical axis */
-img_t *flipv(img_t *in, img_t *out){
+img_t *flipv(img_t *in, img_t *out) {
   INIT_DECLS;
  
   /* Exercise 1.4 - 2: Implement this function body. (Optional) */
@@ -412,21 +406,22 @@ img_t *flipv(img_t *in, img_t *out){
  *                   boundaries that we need to exchange with our neighbours?
  *
  */
-img_t *apply(size_t kw, size_t kh, int* kernel, img_t *in, img_t *out){
+img_t *apply(size_t kw, size_t kh, int* kernel, img_t *in, img_t *out) {
   INIT_DECLS;
 
   /* Sanity check. */
-  if((kw % 2 == 0) || (kh % 2 == 0)){
+  if ((kw % 2 == 0) || (kh % 2 == 0)) {
     printf(" Cannot apply kernel with even size!\n");
     return(out);
   }
 
   /* calculate the sum of the kernel, and do a zero check. */
   int sum = 0;  
-  for(size_t i = 0; i < kw * kh; i++){
+  for (size_t i = 0; i < kw * kh; i++) {
     sum += kernel[i];
   }
-  if(sum == 0){
+
+  if (sum == 0) {
     sum = 1;
   }
 
@@ -439,10 +434,10 @@ img_t *apply(size_t kw, size_t kh, int* kernel, img_t *in, img_t *out){
    */
 
   /* Loop over all pixel rows. */
-  for(size_t y = 0; y < in_h; y++){
+  for (size_t y = 0; y < in_h; y++) {
 
     /* Loop over all pixels in a row. */
-    for(size_t x = 0; x < in_w; x++){
+    for (size_t x = 0; x < in_w; x++) {
 
       /* For readability calculate the current position in the image. */
       size_t imageindex = y * in_w + x;
@@ -453,22 +448,19 @@ img_t *apply(size_t kw, size_t kh, int* kernel, img_t *in, img_t *out){
        *
        * For MPI, we do need something special here. What?
        */
-      if((y <= (kh / 2)) || (y >= in_h - (kh / 2)) ||
-         (x <= (kw / 2)) || (x >= in_w - (kw / 2)) ){
+      if ((y <= (kh / 2)) || (y >= in_h - (kh / 2)) ||
+         (x <= (kw / 2)) || (x >= in_w - (kw / 2)) ) {
 
         /* Copy input value. */
         out_data[imageindex] = in_data[imageindex];
-
-      }
-      else{
-
+      } else {
         /* Variables to sum up all colors during the loops over the kernel. */
         int r = 0;
         int g = 0;
         int b = 0;
 
         /* Loop over the kernel rows. */
-        for(size_t suby = 0; suby < kh; suby++){
+        for (size_t suby = 0; suby < kh; suby++) {
 
           /* We need the offset from the center of the kernel. */
           size_t suby_centered = suby - (kh / 2);
@@ -617,11 +609,11 @@ img_t *sobel(img_t *in, img_t *out){
 }
 
 /* Rotate an image by 90 degrees (clockwise, or anti-clockwise) */
-img_t *rotate90(img_t *in, img_t *out){
+img_t *rotate90(img_t *in, img_t *out) {
   INIT_DECLS;
 
-  for(size_t y = 0; y < in_h; y++){
-    for(size_t x = 0; x < in_w; x++){
+  for (size_t y = 0; y < in_h; y++) {
+    for (size_t x = 0; x < in_w; x++) {
       out_data[x * in_h + y] = in_data[y * in_w - x - 1];
     }
   }
@@ -678,7 +670,7 @@ img_t *contrast(img_t *in, img_t *out){
   uint8_t cyrange = cymax - cymin;
   float cy_scalefactor = 255.0 / cyrange;
 
-  for(size_t i = 0; i < in_w * in_h; i++){
+  for (size_t i = 0; i < in_w * in_h; i++) {
       uint8_t r = in_data[i].r, g = in_data[i].g, b = in_data[i].b;
 
       /* Convert RGB to YCbCr (http://www.equasys.de/colorconversion.html). */
@@ -723,7 +715,6 @@ img_t *sharpen(img_t *in, img_t *out){
   return(out);
 }
 
-
 /* Think of something funny, or usefull 1. */
 img_t *yourfilter1(img_t *in, img_t *out){
   INIT_DECLS;
@@ -751,4 +742,3 @@ img_t *yourfilter3(img_t *in, img_t *out){
   /* Return new image. */
   return(out);
 }
-

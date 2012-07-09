@@ -37,6 +37,4 @@ double getRTimer(timer *t);
 
 /* Clean up properly. */
 void destroyRTimer(timer *t);
-
 #endif
-

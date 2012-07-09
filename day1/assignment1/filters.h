@@ -72,4 +72,3 @@ img_t *yourfilter2(img_t *in, img_t *out);
 img_t *yourfilter3(img_t *in, img_t *out);
 
 #endif
-

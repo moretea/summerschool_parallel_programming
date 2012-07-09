@@ -27,14 +27,14 @@ img_t *readPPM(const char *filename)
 {
     /* Open file for input. */
     int fd = open(filename, O_RDONLY);
-    if(fd == -1){
+    if(fd < 0){
         perror(filename);
         exit(1);
     }   
 
     /* Figure out the size by seeking to the end, and back. */
     struct stat st;
-    if (fstat(fd, &st) == -1){
+    if (fstat(fd, &st) < 0){
         perror(filename);
         exit(1);
     }
@@ -190,7 +190,7 @@ void writePPM(const char *filename, img_t *img)
 
     /* Open file for output. */
     int fd = open(filename, O_WRONLY|O_TRUNC|O_CREAT, 0666);
-    if(fd == -1){
+    if(fd < 0){
         perror(filename);
         exit(1);
     }   
@@ -241,4 +241,3 @@ void deletePPM(img_t *img){
   }
   free(img);
 }
-
