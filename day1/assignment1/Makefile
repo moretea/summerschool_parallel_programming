@@ -31,7 +31,7 @@ OUTSUFFIX  = out
 OUTIMAGE   = $(image)-$(filter)-$(OUTSUFFIX).ppm
 RUNARGS    = -i $(INIMAGE) -o $(OUTIMAGE) -f $(filter) -c $(iters)
 
-CFILES     = main.c filters.c ppm.c timer.c
+CFILES     = main.c filters.c ppm.c timer.c in_out.c
 OFILES     = $(CFILES:%.c=%.o)
 
 all:    clean $(OFILES)
