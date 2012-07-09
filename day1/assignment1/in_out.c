@@ -6,7 +6,6 @@
 #  include <mpi.h>
 #endif
 
-
 void handle_input(char *input, img_t **in, img_t **out, img_t **original) {
 #ifndef MPI
   /* Read input image, memory is automaticaly allocated. */
@@ -33,7 +32,7 @@ void handle_input(char *input, img_t **in, img_t **out, img_t **original) {
 
   /* Need to ask MPI who we are, and how many processes there are. */
   MPI_Comm_size(MPI_COMM_WORLD, &size);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);  
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   /* Only one (the first) process reads the input. */
   if (rank == 0) {
@@ -67,7 +66,7 @@ void handle_input(char *input, img_t **in, img_t **out, img_t **original) {
   /* As we know the size by now, we can create the local images */
   *in = createPPM(w, h);
   *out = createPPM(w, h);
- 
+
   /* The first one sends all the processes their data. */
   if (rank == 0) {
 
@@ -76,7 +75,7 @@ void handle_input(char *input, img_t **in, img_t **out, img_t **original) {
 
     /* The next send should start at this index. */
     index = w * h;
- 
+
     /* Loop over all workers. */
     for (int i = 1; i < size; i++) {
 
@@ -87,7 +86,7 @@ void handle_input(char *input, img_t **in, img_t **out, img_t **original) {
       }
 
       /* Do the actual sending */
-      MPI_Send(read->data + index, w * height * sizeof(pixel_t), 
+      MPI_Send(read->data + index, w * height * sizeof(pixel_t),
                MPI_UNSIGNED_CHAR, i, 0, MPI_COMM_WORLD);
 
       /* Update the index for next send. */
@@ -97,9 +96,10 @@ void handle_input(char *input, img_t **in, img_t **out, img_t **original) {
     /* Store a pointer to the original image. */
     *original = read;
 
-  } else { /* All others just receive */
+  } else {
+    /* All others just receive */
 
-    MPI_Recv((*in)->data, w * h * sizeof(pixel_t), 
+    MPI_Recv((*in)->data, w * h * sizeof(pixel_t),
              MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD, NULL);
   }
 #endif
@@ -116,12 +116,9 @@ void handle_output(char *output, img_t *in, img_t *out, img_t *original) {
   /* Free memory for both images. */
   deletePPM(in);
   deletePPM(out);
-#else 
+#else
   /* Size and rank for MPI. */
   int size, rank;
-
-  /* Array to broadcast image width and height. */
-  int dim[2];
 
   /* Local variables for image size and number of lines to compute. */
   int w, h, extrarows, index;
@@ -134,7 +131,7 @@ void handle_output(char *output, img_t *in, img_t *out, img_t *original) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);  
 
   /* Allocate memory for output image. */
-  if(rank == 0){
+  if (rank == 0) {
     write = createPPM(original->w, original->h);
   }
 
@@ -142,15 +139,39 @@ void handle_output(char *output, img_t *in, img_t *out, img_t *original) {
   w = out->w;
   h = out->h;
 
-  /*
-   * Exercise 2.2 - 1: Implement the output data handling here.
-   */
+  /* All slaves send their result to the master */
+  if (rank > 0) {
+    MPI_Send(out->data, w * h * sizeof(pixel_t), MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
+  } else {
+    int part_h     = original->h / size;
+    int extra_rows = original->h % size;
 
+    if (rank < extra_rows) {
+      part_h ++;
+    }
 
+    int offset = original->w * part_h;
+    memcpy(write->data, out->data, offset * sizeof(pixel_t));
 
+    /* Receive each part from the slaves */
+    for (int i = 1; i < size; i++) {
+      int part_h     = original->h / size;
+      int extra_rows = original->h % size;
 
+      if (rank < extra_rows) {
+        part_h ++;
+      }
 
+      int buffer_length = part_h * original->w * sizeof(pixel_t);
+      pixel_t *tmp = write->data + offset;
 
+      MPI_Recv(tmp, buffer_length,
+          MPI_UNSIGNED_CHAR, i, 0, MPI_COMM_WORLD, NULL);
+
+      /* and copy the received bytes to the correct position */
+      offset += buffer_length;
+    }
+  }
 
   /* Do the write-back once we have gathered all data. */
   if (rank == 0) {
@@ -167,4 +188,4 @@ void handle_output(char *output, img_t *in, img_t *out, img_t *original) {
   deletePPM(in);
   deletePPM(out);
 #endif
-}  
+}
