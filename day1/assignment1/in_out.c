@@ -1,11 +1,11 @@
 #include "filters.h"
 #include <string.h>
+#include <stdlib.h>
 
 /* We can compile with and without MPI usage. */
 #ifdef MPI
 #  include <mpi.h>
 #endif
-
 
 void handle_input(char *input, img_t **in, img_t **out, img_t **original) {
 #ifndef MPI
@@ -97,8 +97,9 @@ void handle_input(char *input, img_t **in, img_t **out, img_t **original) {
     /* Store a pointer to the original image. */
     *original = read;
 
-  } else { /* All others just receive */
+  } else { 
 
+    /* All others just receive */
     MPI_Recv((*in)->data, w * h * sizeof(pixel_t), 
              MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD, NULL);
   }
@@ -120,9 +121,6 @@ void handle_output(char *output, img_t *in, img_t *out, img_t *original) {
   /* Size and rank for MPI. */
   int size, rank;
 
-  /* Array to broadcast image width and height. */
-  int dim[2];
-
   /* Local variables for image size and number of lines to compute. */
   int w, h, extrarows, index;
 
@@ -133,8 +131,10 @@ void handle_output(char *output, img_t *in, img_t *out, img_t *original) {
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);  
 
+  printf("RANK %i\n", rank);
+
   /* Allocate memory for output image. */
-  if(rank == 0){
+  if (rank == 0){
     write = createPPM(original->w, original->h);
   }
 
@@ -142,15 +142,38 @@ void handle_output(char *output, img_t *in, img_t *out, img_t *original) {
   w = out->w;
   h = out->h;
 
-  /*
-   * Exercise 2.2 - 1: Implement the output data handling here.
-   */
+  /* All slaves send their result to the master */
+  if (rank > 0) {
+    printf("MPI sending result %i (%ix%i, %ib)\n", rank, w, h, w * h * sizeof(pixel_t));
+    MPI_Send(out->data, w * h * sizeof(pixel_t), MPI_UNSIGNED_CHAR, 0, 0, MPI_COMM_WORLD);
+  } else {
+    /* The master receives all the parts */
+    /* TODO: Don't force order! */
 
+    int offset = 0;
+    /* Receive each part from the slaves */
+    for (int i = 1; i < size; i++) {
+      int part_h     = original->h / size;
+      int extra_rows = original->h % size;
 
+      if (rank < extra_rows) {
+        part_h ++;
+      }
 
+      int buffer_length = part_h * original->w * sizeof(pixel_t);
+      pixel_t *tmp = malloc(buffer_length);
 
+      printf("WATING FOR %i (Expecting %i b)\n", i, buffer_length);
+      MPI_Recv(tmp, buffer_length,
+          MPI_UNSIGNED_CHAR, i, 0, MPI_COMM_WORLD, NULL);
+      printf("RECEIVED   %i\n", i);
 
-
+      /* and copy the received bytes to the correct position */
+      memcpy(tmp, write->data + offset, buffer_length);
+      free(tmp);
+      offset += buffer_length;
+    }
+  }
 
   /* Do the write-back once we have gathered all data. */
   if (rank == 0) {
@@ -167,4 +190,4 @@ void handle_output(char *output, img_t *in, img_t *out, img_t *original) {
   deletePPM(in);
   deletePPM(out);
 #endif
-}  
+}
