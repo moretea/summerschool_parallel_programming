@@ -392,8 +392,17 @@ img_t *fliph(img_t *in, img_t *out) {
 /* Flip an image along the vertical axis */
 img_t *flipv(img_t *in, img_t *out) {
   INIT_DECLS;
+
+  for (size_t h = 0; h < in_h; h++) {
+    for (size_t w = 0; w < in_w; w++) {
+
+      size_t in_idx  = h              * in_w + w;
+      size_t out_idx = (in_h - h - 1) * in_w + w;
+
+      out->data[out_idx] = in->data[in_idx];
+    }
+  }
  
-  /* Exercise 1.4 - 2: Implement this function body. (Optional) */
 
   /* Return new image. */
   return(out);
