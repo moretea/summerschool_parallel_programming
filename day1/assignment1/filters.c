@@ -375,7 +375,15 @@ img_t *gray(img_t *in, img_t *out){
 img_t *fliph(img_t *in, img_t *out) {
   INIT_DECLS;
 
-  /* Exercise 1.4 - 2: Implement this function body. */
+  for (size_t h = 0; h < in_h; h++) {
+    for (size_t w = 0; w < in_w; w++) {
+
+      size_t in_idx  = h * in_w + w;
+      size_t out_idx = h * in_w + (in_w - w);
+
+      out->data[out_idx] = in->data[in_idx];
+    }
+  }
 
   /* Return new image. */
   return(out);
