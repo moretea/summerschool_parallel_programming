@@ -312,8 +312,8 @@ img_t *blue(img_t *in, img_t *out) {
   INIT_DECLS;
 
   /* Loop over all pixels and copy the blue value. */
-  for (size_t i = 0; i < in_w; i++) {
-    for (size_t j = 0; j < in_h; j++) {
+  for (size_t j = 0; j < in_h; j++) {
+    for (size_t i = 0; i < in_w; i++) {
       out_data[j*in_w + i].r = 0;
       out_data[j*in_w + i].g = 0;
       out_data[j*in_w + i].b = in_data[j*in_w + i].b;
