@@ -139,6 +139,9 @@ img_t *blue(img_t *in, img_t *out) {
 img_t *red(img_t *in, img_t *out) {
   INIT_DECLS;
 
+#ifndef MPI
+  /* No MPI; naive implementation */
+
   /* Loop over all pixels and copy the red value. */
   for (size_t i = 0; i < in_w * in_h; i++) {
     out_data[i].r = in_data[i].r;
@@ -148,6 +151,10 @@ img_t *red(img_t *in, img_t *out) {
 
   /* Return new image. */
   return(out);
+#else /* MPI defined */
+  /* Use MPI */
+
+#endif
 }
 
 
@@ -248,6 +255,70 @@ img_t *apply(size_t kw, size_t kh, int* kernel, img_t *in, img_t *out) {
     sum = 1;
   }
 
+#ifndef MPI
+  /* Loop over all pixel rows. */
+  for (size_t y = 0; y < in_h; y++) {
+
+    /* Loop over all pixels in a row. */
+    for (size_t x = 0; x < in_w; x++) {
+
+      /* For readability calculate the current position in the image. */
+      size_t imageindex = y * in_w + x;
+
+      /* 
+       * We need to check if we can apply the filter. If not (part of the 
+       * kernel gets out of the image borders), just assign the input value.
+       *
+       * For MPI, we do need something special here. What?
+       */
+      if ((y <= (kh / 2)) || (y >= in_h - (kh / 2)) ||
+         (x <= (kw / 2)) || (x >= in_w - (kw / 2)) ) {
+
+        /* Copy input value. */
+        out_data[imageindex] = in_data[imageindex];
+      } else {
+        /* Variables to sum up all colors during the loops over the kernel. */
+        int r = 0;
+        int g = 0;
+        int b = 0;
+
+        /* Loop over the kernel rows. */
+        for (size_t suby = 0; suby < kh; suby++) {
+
+          /* We need the offset from the center of the kernel. */
+          size_t suby_centered = suby - (kh / 2);
+
+          /* Loop over the kernel values in a row. */
+          for(size_t subx = 0; subx < kw; subx++){
+
+            /* We need the offset from the center of the kernel. */
+            size_t subx_centered = subx - (kw / 2);
+
+            /* Now we can calculate the index in the kernel array. */
+            size_t kernelindex = suby * kw + subx;
+
+            /* And the index in the image array. */
+            size_t index = imageindex + (suby_centered * in_w) + subx_centered;
+
+            /* Add the pixel values to our sums. */
+            r += kernel[kernelindex] * in_data[index].r;
+            g += kernel[kernelindex] * in_data[index].g;
+            b += kernel[kernelindex] * in_data[index].b;
+          }
+        }
+
+        if(r < 0) r = 0;
+        if(g < 0) g = 0;
+        if(b < 0) b = 0;
+
+        /* Normalize and assign our new pixel. */
+        out_data[imageindex].r = r / sum;
+        out_data[imageindex].g = g / sum;
+        out_data[imageindex].b = b / sum;
+      }
+    }
+  }
+#else
   /* 
    * MPI: This might be a good point to get some data from the neighbours,
    *      And they might want to receive something from us as well...
@@ -318,6 +389,8 @@ img_t *apply(size_t kw, size_t kh, int* kernel, img_t *in, img_t *out) {
       }
     }
   }
+
+#endif
 
   /* Return new image. */
   return(out);

@@ -16,7 +16,7 @@ DIST   = assignment1
 
 VIEW    = display
 
-image   = cat2
+image   = smallcat
 filter  = invert
 iters   = 1
 nodes   = 1
