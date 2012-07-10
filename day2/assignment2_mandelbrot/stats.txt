@@ -1,0 +1,11 @@
+Original implementation
+Sequentionally: took 55.229820s to compute all iterations.
+Per iteration: 5.522982s
+
+Spin up threads without using them
+Optimize global took 107.564159s to compute all iterations.
+Per iteration: 10.756416s
+
+Make computation parallel
+Optimize global took 8.755216s to compute all iterations.
+Per iteration: 0.875522s
