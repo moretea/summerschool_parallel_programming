@@ -139,9 +139,6 @@ img_t *blue(img_t *in, img_t *out) {
 img_t *red(img_t *in, img_t *out) {
   INIT_DECLS;
 
-#ifndef MPI
-  /* No MPI; naive implementation */
-
   /* Loop over all pixels and copy the red value. */
   for (size_t i = 0; i < in_w * in_h; i++) {
     out_data[i].r = in_data[i].r;
@@ -151,10 +148,6 @@ img_t *red(img_t *in, img_t *out) {
 
   /* Return new image. */
   return(out);
-#else /* MPI defined */
-  /* Use MPI */
-
-#endif
 }
 
 
@@ -238,6 +231,10 @@ img_t *flipv(img_t *in, img_t *out) {
  */
 img_t *apply(size_t kw, size_t kh, int* kernel, img_t *in, img_t *out) {
   INIT_DECLS;
+
+#ifdef MPI
+
+#endif
 
   /* Sanity check. */
   if ((kw % 2 == 0) || (kh % 2 == 0)) {
