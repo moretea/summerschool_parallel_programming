@@ -1,5 +1,7 @@
 NVCC		= nvcc
 CC		= g++
+
+EXEC=vector-add
 #CU_FLAGS	= -O3 -g -deviceemu
 CU_FLAGS	= -O3 -g --ptxas-options=-v -arch compute_20 -code sm_20
 CC_FLAGS	= -O3 -m64 -Wall
@@ -24,6 +26,9 @@ vector-add:	$(CU_OBJECTS) $(CC_OBJECTS)
 		$(NVCC) $^ -o $@
 
 ptx:		$(CU_PTX) 
+
+run:
+	prun -v -np 1 -native '-l gpu=GTX480' ${EXEC}
 
 clean:
 		rm -f *.o vector-add *~
