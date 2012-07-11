@@ -8,7 +8,6 @@ using namespace std;
 
 #define THRESHOLD 16
 
-
 void compareSizes(char* file1, char*file2) {
     FILE *img1, *img2;
     long size1, size2;
@@ -79,20 +78,30 @@ int main(int argc, char* argv[]) {
     }
 
     int pixelsAboveThreshold = 0;
-    for(int i=0; i<imgSize; i++) {
-	diff[i].R = fabsf(image1[i].R - image2[i].R);
-	diff[i].G = fabsf(image1[i].G - image2[i].G);
-	diff[i].B = fabsf(image1[i].B - image2[i].B);
 
-	if(diff[i].R > THRESHOLD || diff[i].G > THRESHOLD || diff[i].B > THRESHOLD) {
-	    pixelsAboveThreshold++;
-	}
+    double total_fault = 0;
+
+    for(int i=0; i<imgSize; i++) {
+      diff[i].R = fabsf(image1[i].R - image2[i].R);
+      diff[i].G = fabsf(image1[i].G - image2[i].G);
+      diff[i].B = fabsf(image1[i].B - image2[i].B);
+
+      total_fault = diff[i].R + diff[i].G + diff[i].B;
+
+      if (diff[i].R > THRESHOLD || diff[i].G > THRESHOLD || diff[i].B > THRESHOLD) {
+          pixelsAboveThreshold++;
+      }
     }
 
     write_BMP("diff.bmp", diff, imgW1, imgH1);
 
     float percent = (100.0f * pixelsAboveThreshold) / imgSize;
     cout << "pixels above threshold: " << pixelsAboveThreshold << "(" << percent << " \%%)" << endl;
+    cout << "Total diff:" << total_fault << endl;
 
-    return 0;
+    if (total_fault > 0) {
+      return 1;
+    } else {
+      return 0;
+    }
 }

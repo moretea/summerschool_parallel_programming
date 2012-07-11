@@ -18,3 +18,6 @@ compare_images: compare_images.cc bmp_io.cc
 
 clean:
 		rm -f *.o filters compare_images *~
+
+run: all
+	./filters ../input-images/image2.bmp

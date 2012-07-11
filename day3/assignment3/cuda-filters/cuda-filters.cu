@@ -51,7 +51,7 @@ void save_histogram(unsigned int* histogram) {
         }
     }
     
-    write_GrayBMP("histogram.bmp", out, HISTOGRAM_SIZE, HISTOGRAM_SIZE);
+    write_GrayBMP("../results/cuda/histogram.bmp", out, HISTOGRAM_SIZE, HISTOGRAM_SIZE);
     free(out);
 }
 
@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
     rgbToGrayTimer.stop();
 
     free(image);
-    write_GrayBMP("gray.bmp", gray, imgW, imgH);
+    write_GrayBMP("../results/cuda/gray.bmp", gray, imgW, imgH);
     
 
     // Compute Histogram
@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
     contrast_1D(gray, histogram, imgSize);
     contrastTimer.stop();
 
-    write_GrayBMP("contrast.bmp", gray, imgW, imgH);
+    write_GrayBMP("../results/cuda/contrast.bmp", gray, imgW, imgH);
     
 
     // Convolution
@@ -214,7 +214,7 @@ int main(int argc, char* argv[]) {
     combineImages(outX, outY, imgSize);
     convolutionTimer.stop();
 
-    write_GrayBMP("convolution.bmp", outX, imgW, imgH);
+    write_GrayBMP("../results/cuda/convolution.bmp", outX, imgW, imgH);
     
     cout << rgbToGrayTimer;
     cout << histogramTimer;
