@@ -1,0 +1,12 @@
+use StdIO: all;
+use Array: all;
+
+int main() {
+  printf("Reshape [1] with [1]\n");
+  print(reshape([1], [1]));
+
+  printf("Reshape [1] with []\n");
+  print(reshape([], [1]));
+
+  return(0);
+}
