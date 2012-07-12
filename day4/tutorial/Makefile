@@ -14,7 +14,7 @@ clean:
 regenerate_gitignore:
 	@ruby -e '\
 		File.open(".gitignore", "w") do |o|; \
-	  	Dir["*.sac"].collect do |f|; \
+	  	Dir["*.sac"].sort.collect do |f|; \
 				o.puts f.gsub(".sac", ""); \
 				o.puts f.gsub(".sac", ".c"); \
 				o.puts; \
