@@ -8,5 +8,11 @@ int main() {
   printf("Reshape [1] with []\n");
   print(reshape([], [1]));
 
+
+  /* Exercise 2 */
+
+  /* print(reshape(reshape([1], [[2], [2]]), [1,2,3,4])); */
+  /* Doesn't work! */
+
   return(0);
 }
