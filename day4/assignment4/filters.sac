@@ -1,5 +1,5 @@
 /*
- * Image filter skeletons file
+ n* Image filter skeletons file
  *
  * Below are empty filter functions which you can fill in.
  * The rotate function is already given as an example.
@@ -10,44 +10,8 @@ import Color8: all;
 import StdIO: all;
 import String: all;
 import CommandLine: {argc, argv};
-import RTclock: all;
+import RTClock: all;
 import RTimer: all;
-
-/* Specialize statements */
-specialize color[1200,1600] rotate90( color[1600,1200] image);
-specialize color[1600,1200] rotate90( color[1200,1600] image);
-specialize color[3650,2433] rotate90( color[2433,3650] image);
-specialize color[2433,3650] rotate90( color[3650,2433] image);
-
-specialize color[1200,1600] fliph( color[1200,1600] image);
-specialize color[1600,1200] fliph( color[1600,1200] image);
-specialize color[3650,2433] fliph( color[3650,2433] image);
-specialize color[2433,3650] fliph( color[2344,3650] image);
-
-specialize color[1200,1600] flipv( color[1200,1600] image);
-specialize color[1600,1200] flipv( color[1600,1200] image);
-specialize color[3650,2433] flipv( color[3650,2433] image);
-specialize color[2433,3650] flipv( color[2344,3650] image);
-
-specialize color[1200,1600] blur9( color[1200,1600] image);
-specialize color[1600,1200] blur9( color[1600,1200] image);
-specialize color[3650,2433] blur9( color[3650,2433] image);
-specialize color[2433,3650] blur9( color[2344,3650] image);
-
-specialize color[1200,1600] blur25( color[1200,1600] image);
-specialize color[1600,1200] blur25( color[1600,1200] image);
-specialize color[3650,2433] blur25( color[3650,2433] image);
-specialize color[2433,3650] blur25( color[2344,3650] image);
-
-specialize color[1200,1600] sobel( color[1200,1600] image);
-specialize color[1600,1200] sobel( color[1600,1200] image);
-specialize color[3650,2433] sobel( color[3650,2433] image);
-specialize color[2433,3650] sobel( color[2344,3650] image);
-
-specialize color[1200,1600] sharpen( color[1200,1600] image);
-specialize color[1600,1200] sharpen( color[1600,1200] image);
-specialize color[3650,2433] sharpen( color[3650,2433] image);
-specialize color[2433,3650] sharpen( color[2344,3650] image);
 
 
 /*
@@ -198,6 +162,7 @@ int main()
 
   if( argc() == 1 || filter == "")
   {
+#ifndef CUDA
     printf( "\nImage Filters"
             "\n==============================================================="
             "\nUsage: %s -f <filter> [-c <count> -i <input> -o <output> -v]"
@@ -209,11 +174,13 @@ int main()
             "\n"
             "\n Valid filter names are: rotate90, fliph, flipv, invert, blur9, blur25, sobel, sharpen"
             "\n\n", argv( 0));
+#endif
   }
   else
   {
     if( stats)
     {
+#ifndef CUDA
       fprintf( stderr,
               "---------------------------------------------------------------\n"
               " Iterations: %d\n"
@@ -225,6 +192,7 @@ int main()
               input,
               output,
               filter);
+#endif
     }
 
 
@@ -234,7 +202,9 @@ int main()
     }
     else
     {
-      image = readPPM( input);
+/*      printf("Input file: %s\n", input); */
+      image = readPPM(input);
+/*      print(image); */
     }
 
 
@@ -305,7 +275,9 @@ int main()
     }
     else
     {
+#ifndef CUDA
       fprintf( stderr, "\nInvalid filter\n\n");
+#endif
     }
 
 
@@ -323,13 +295,14 @@ int main()
 
     if( stats)
     {
-      secs, nsecs = getRTimer1( timer);
-      time = getRTimer2( timer);  
+      time = getRTimerDbl( timer);  
 
+#ifndef CUDA
       fprintf( stderr,
               " Seconds:    %f\n"
               "---------------------------------------------------------------\n",
               time);
+#endif
     }
 
     destroyRTimer( timer);
