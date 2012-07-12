@@ -34,7 +34,7 @@ clean:
 		rm -f *.o cuda-filters.ptx cuda-filters compare_images *~
 
 run: all
-	prun -v -np 1 -native '-l gpu=GTX480' cuda-filters ../input-images/image2.bmp
+	prun -v -np 1 -native '-l gpu=GTX480' cuda-filters ../input-images/downtown_bflo2.bmp
 
 test: all
 	compare_images

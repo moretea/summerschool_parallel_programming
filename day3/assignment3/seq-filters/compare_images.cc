@@ -79,14 +79,20 @@ int main(int argc, char* argv[]) {
 
     int pixelsAboveThreshold = 0;
 
-    double total_fault = 0;
+    double total_diff = 0;
+    int faults = 0;
 
     for(int i=0; i<imgSize; i++) {
       diff[i].R = fabsf(image1[i].R - image2[i].R);
       diff[i].G = fabsf(image1[i].G - image2[i].G);
       diff[i].B = fabsf(image1[i].B - image2[i].B);
 
-      total_fault = diff[i].R + diff[i].G + diff[i].B;
+      double tmp_diff = diff[i].R + diff[i].G + diff[i].B;
+
+      if (diff > 0) {
+        total_diff += tmp_diff;
+        faults ++;
+      }
 
       if (diff[i].R > THRESHOLD || diff[i].G > THRESHOLD || diff[i].B > THRESHOLD) {
           pixelsAboveThreshold++;
@@ -97,9 +103,10 @@ int main(int argc, char* argv[]) {
 
     float percent = (100.0f * pixelsAboveThreshold) / imgSize;
     cout << "pixels above threshold: " << pixelsAboveThreshold << "(" << percent << " \%%)" << endl;
-    cout << "Total diff:" << total_fault << endl;
+    cout << "Total diff:"   << total_diff << endl;
+    cout << "Total faults:" << faults << endl;
 
-    if (total_fault > 0) {
+    if (faults > 0) {
       return 1;
     } else {
       return 0;

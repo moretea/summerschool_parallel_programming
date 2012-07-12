@@ -20,4 +20,4 @@ clean:
 		rm -f *.o filters compare_images *~
 
 run: all
-	./filters ../input-images/image2.bmp
+	prun -v -np 1 -native '-l gpu=GTX480' filters ../input-images/downtown_bflo2.bmp

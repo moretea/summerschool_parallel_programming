@@ -55,23 +55,114 @@ void save_histogram(unsigned int* histogram) {
     free(out);
 }
 
+static fast_color_t *convert_to_fast(color_image_t org, int size) {
+  fast_color_t *fast = (fast_color_t*) malloc(sizeof(fast));
 
+  fast->R = (float*) malloc(sizeof(float) * size);
+  fast->G = (float*) malloc(sizeof(float) * size);
+  fast->B = (float*) malloc(sizeof(float) * size);
+
+  for (int i = 0; i < size; i++) {
+    fast->R[i] = org[i].R;
+    fast->G[i] = org[i].G;
+    fast->B[i] = org[i].B;
+  }
+
+  return fast;
+}
+
+static fast_color_t *malloc_and_copy_device_img(fast_color_t *host_img, int size) {
+  fast_color_t *device_img;
+
+  device_img = (fast_color_t*) malloc(sizeof(fast_color_t));
+
+  checkCudaCall(cudaMalloc( &(device_img->R), sizeof(float) * size));
+  checkCudaCall(cudaMalloc( &(device_img->G), sizeof(float) * size));
+  checkCudaCall(cudaMalloc( &(device_img->B), sizeof(float) * size));
+
+  /* Copy */
+  cudaMemcpy(device_img->R, host_img->R, sizeof(float) * size, cudaMemcpyHostToDevice);
+  cudaMemcpy(device_img->G, host_img->G, sizeof(float) * size, cudaMemcpyHostToDevice);
+  cudaMemcpy(device_img->B, host_img->B, sizeof(float) * size, cudaMemcpyHostToDevice);
+
+  return device_img;
+}
+
+void free_device_img(fast_color_t *deviceImg) {
+  cudaFree(deviceImg->R);
+  cudaFree(deviceImg->G);
+  cudaFree(deviceImg->B);
+  free(deviceImg);
+}
+
+__global__ void gray_kernel(float *R, float *G, float *B, float *gray) {
+  unsigned int i = (blockDim.x * blockIdx.x + threadIdx.x) * 4;
+
+  /* Load R */
+  float r1 = R[i];
+  float r2 = R[i+1];
+  float r3 = R[i+2];
+  float r4 = R[i+3];
+
+  /* Load G */
+  float g1 = G[i];
+  float g2 = G[i+1];
+  float g3 = G[i+2];
+  float g4 = G[i+3];
+
+  /* Load B */
+  float b1 = B[i];
+  float b2 = B[i+1];
+  float b3 = B[i+2];
+  float b4 = B[i+3];
+
+  /* Calc */
+  gray[i]     = (30 * r1 + 59 * g1 + 11 * b1) / 100;
+  gray[i + 1] = (30 * r2 + 59 * g2 + 11 * b2) / 100;
+  gray[i + 2] = (30 * r3 + 59 * g3 + 11 * b3) / 100;
+  gray[i + 3] = (30 * r4 + 59 * g4 + 11 * b4) / 100;
+}
+
+
+cudaEvent_t start, stop;
 // Parallelize this function on the GPU
 gray_image_t RGBtoGray(color_image_t RGB, int imgW, int imgH) {
     int imgS = imgW * imgH;
     gray_image_t gray;
 
-    // Y = 0.3*R + 0.59*G + 0.11*B
+    /* Convert image to a efficient float array*/
+    fast_color_t *hostImg = convert_to_fast(RGB, imgS);
+
+    /* Alloc & copy image to the GPU */
+    fast_color_t *deviceImg = malloc_and_copy_device_img(hostImg, imgS);
+
+    gray_image_t *device_out;
+    checkCudaCall(cudaMalloc((void **) &device_out, sizeof(float) * imgS));
+    cudaMemset(device_out,0, sizeof(float) * imgS);
+
+    /* Compute gray */
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+    gray_kernel<<< (imgS / 1024 / 4), 1024>>>(deviceImg->R, 
+                                          deviceImg->G, 
+                                          deviceImg->B, 
+                                          (float*) device_out);
+    cudaEventRecord(stop, 0);
+
+    /* Copy back */
     gray = (gray_image_t) malloc(imgS * sizeof(float));
-    if (gray == NULL) return NULL;
+    cudaMemcpy(gray, device_out, imgS * sizeof(float), cudaMemcpyDeviceToHost);
 
-    for (int i = 0; i < imgS; i++) {
-        gray[i] = (30*RGB[i].R + 59*RGB[i].G + 11*RGB[i].B) / 100;
-    }
+    float elapsedTime;
+    cudaEventElapsedTime(&elapsedTime, start, stop);
+    
+    cout << "kernel invocation for rgbtogray took " << (elapsedTime) << " milliseconds" << endl;
 
+    /* Free image */
+    free_device_img(deviceImg);
     return gray;
 }
-
 
 // Parallelize this function on the GPU
 void histogram_1D(gray_image_t image, int imgSize, unsigned int *histogram) {
@@ -83,7 +174,6 @@ void histogram_1D(gray_image_t image, int imgSize, unsigned int *histogram) {
         histogram[(int)image[i]]++;
     }
 }
-
 
 // Parallelize this function on the GPU
 void contrast_1D(gray_image_t image, unsigned int *histogram, int imgSize) {    
@@ -167,14 +257,15 @@ int main(int argc, char* argv[]) {
     unsigned int histogram[HISTOGRAM_SIZE];
 
     if (argc<2)   {
-	cerr << "Not enough arguments! Bailing out..." << endl;
+        cerr << "Not enough arguments! Bailing out..." << endl;
         return -1;
     }
     
     if ((image = read_BMP(argv[1], &imgW, &imgH)) == NULL) {
-	cerr << "Cannot read BMP ... ?! " << endl;
+        cerr << "Cannot read BMP ... ?! " << endl;
         return 1;    
     }
+
     int imgSize = imgW * imgH;
     timer rgbToGrayTimer("rgb to gray");
     timer histogramTimer("histogram");
@@ -185,11 +276,11 @@ int main(int argc, char* argv[]) {
     // Convert to grayscale image
     rgbToGrayTimer.start();
     gray_image_t gray = RGBtoGray(image, imgW, imgH);
+    cout << "MEH" << endl;
     rgbToGrayTimer.stop();
 
     free(image);
     write_GrayBMP("../results/cuda/gray.bmp", gray, imgW, imgH);
-    
 
     // Compute Histogram
     histogramTimer.start();

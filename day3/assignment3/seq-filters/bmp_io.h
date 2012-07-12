@@ -7,6 +7,13 @@ typedef struct __color {
 	float B;
 } color_t;
 
+typedef struct {
+  float *R;
+  float *G;
+  float *B;
+} fast_color_t;
+
+
 typedef color_t *color_image_t;
 typedef float* gray_image_t;
  

@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 
+
 # Clear
 `rm -rf cuda/*`
-`rm -rf seq/*`
+#`rm -rf seq/*`
 
 Dir.chdir File.expand_path("../../cuda-filters", __FILE__) do
   system("make run")
@@ -12,6 +13,7 @@ Dir.chdir File.expand_path("../../seq-filters", __FILE__) do
   system("make run")
 end
 
+sleep 2
 
 # Compare files
 
@@ -28,6 +30,7 @@ if  (base_cuda | base_seq) != (base_cuda && base_seq)
 end
 
 
+puts; puts
 failed = []
 
 # Now check for differences
@@ -35,7 +38,9 @@ Dir.chdir File.expand_path("../diff", __FILE__) do
   base_cuda.each do |f|
     cuda = "../cuda/#{f}"
     seq  = "../seq/#{f}"
-    system("pwd && ../../cuda-filters/compare_images #{cuda} #{seq} 2>&1")
+    puts
+    puts f
+    system("../../cuda-filters/compare_images #{cuda} #{seq}")
 
     unless $?.success?
       failed << f
