@@ -1,6 +1,7 @@
 SACC=sac2c
 SACC_FLAGS=-v1 -target cuda64 -DCUDA
 OPTIMAZATIONS= 
+INPUT_IMAGE=small.ppm
 #-docoal -doshr -doexpar -dolao
 
 BINS=$(shell ls *.sac | sed -e 's/\.sac//g') 
@@ -26,5 +27,5 @@ regenerate_gitignore:
 		end'
 
 rotate90: all
-	prun -v -np 1 -native '-l gpu=GTX480' ./filters -f rotate90 -i cat1.ppm -o out.ppm
+	prun -v -np 1 -native '-l gpu=GTX480' ./filters -f rotate90 -i $(INPUT_IMAGE) -o out.ppm
 	display out.ppm
