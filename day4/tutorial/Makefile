@@ -1,10 +1,9 @@
 SACC=sac2c
 SACC_FLAGS=-v1
 
-# Note! Last character of the line below must be space! The clean target needs it to match.
-BINS=hello_world  2_1_defining_arrays 2_2_arrays 
+BINS=$(shell ls *.sac | sed -e 's/\.sac//g') 
 
-all: ${BINS}
+all: ${BINS} regenerate_gitignore
 
 clean:
 	rm -rfv ${BINS} `echo '${BINS}' | ruby -e 'print STDIN.read.gsub(/ /,".c ")'`
@@ -12,3 +11,12 @@ clean:
 %:	%.sac
 	$(SACC) $(SACC_FLAGS) $< -o `echo $< | sed -e 's/\.sac//g'`
 
+regenerate_gitignore:
+	@ruby -e '\
+		File.open(".gitignore", "w") do |o|; \
+	  	Dir["*.sac"].collect do |f|; \
+				o.puts f.gsub(".sac", ""); \
+				o.puts f.gsub(".sac", ".c"); \
+				o.puts; \
+			end; \
+		end'
