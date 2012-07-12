@@ -1,7 +1,8 @@
 SACC=sac2c
 SACC_FLAGS=-v1
 
-BINS=hello_world 
+# Note! Last character of the line below must be space! The clean target needs it to match.
+BINS=hello_world  2_1_defining_arrays 
 
 all: ${BINS}
 
