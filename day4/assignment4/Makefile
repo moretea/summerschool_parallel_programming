@@ -16,9 +16,11 @@ clean:
 regenerate_gitignore:
 	@ruby -e '\
 		File.open(".gitignore", "w") do |o|; \
+			o.puts "out.ppm"; \
 	  	Dir["*.sac"].sort.collect do |f|; \
 				o.puts f.gsub(".sac", ""); \
 				o.puts f.gsub(".sac", ".c"); \
+				o.puts f.gsub(".sac", ".cu"); \
 				o.puts; \
 			end; \
 		end'

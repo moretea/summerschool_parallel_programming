@@ -1,4 +1,5 @@
+out.ppm
 filters
 filters.c
 filters.cu
-out.ppm
+
