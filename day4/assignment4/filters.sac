@@ -1,0 +1,302 @@
+/*
+ * Image filter skeletons file
+ *
+ * Below are empty filter functions which you can fill in.
+ * The rotate function is already given as an example.
+ */
+import PPM: all;
+import Structures: all;
+import Color8: all;
+import StdIO: all;
+import String: all;
+import CommandLine: {argc, argv};
+import RTClock: all;
+import RTimer: all;
+
+
+/*
+ * Apply a stencil to the image
+ */
+color[.,.] apply( double[.,.] kernel, color[.,.] image)
+{
+  return( image);
+}
+
+
+/* Filter implementations */
+
+/* Rotate a filter by 90 degrees */
+color[.,.] rotate90( color[.,.] image)
+{
+  a = [shape(image)[1], shape(image)[0]];
+
+  res = with {
+    ( . <= [i,j] <= . ) : image[j,i];
+  }: genarray (a, black());
+
+  return( res);
+}
+
+
+/* Flip an image along the horizontal axis */
+color[.,.] fliph( color[.,.] image)
+{
+  return( image);
+}
+
+
+/* Flip an image along the vertical axis */
+color[.,.] flipv( color[.,.] image)
+{
+  return( image);
+}
+
+
+/* Invert every pixel in the image */
+color[.,.] invert( color[.,.] image)
+{
+  return( image);
+}
+
+/*
+ * Blur the image by applying the following stencil to the image
+ *
+ * 1 2 1
+ * 2 3 2
+ * 1 2 1
+ */
+color[.,.] blur9(color [.,.] image)
+{
+  /* use the apply function */
+ 
+  return( image);
+}
+
+
+/*
+ * Blur the image by applying the following stencil to the image
+ *
+ * 1  4  7  4 1
+ * 4 20 33 20 4
+ * 7 33 55 33 7
+ * 4 20 33 20 4
+ * 1  4  7  4 1
+ */
+color[.,.] blur25(color [.,.] image)
+{
+  /* use the apply function */
+
+  return( image);
+}
+
+
+/* Do edge detection by applying the following stencils to the image and add
+ * them
+ *
+ *  1  2  1
+ *  0  0  0
+ * -1 -2 -1
+ *
+ *  1  0  -1
+ *  2  0  -2
+ *  1  0  -1
+ *
+ */
+color[.,.] sobel( color[.,.] image)
+{
+  /* use the apply function */
+
+  return( image);
+}
+
+/*
+ * Sharpen an image by taking the original image and subtracting a blurred
+ * version of that image
+ */
+color[.,.] sharpen( color[.,.] image)
+{
+  return( image);
+}
+
+
+/*
+ * The main function that calls the filters and does the timing
+ * Does not need to be modified
+ */
+int main()
+{
+  int secs;
+  int nsecs;
+  double time;
+
+  iterations = 1;
+  input      = "";
+  output     = "";
+  filter     = "";
+  stats      = false;
+
+  for( i = 1; i < argc() - 1; i++)
+  {
+    if( argv( i) String::== "-c")
+    {
+      iterations = toi( argv( i+1));
+    }
+    else if(argv( i) String::== "-i")
+    { 
+      input = argv( i+1);
+    }
+    else if(argv( i) String::== "-o")
+    {
+      output = argv( i+1);
+    }
+    else if(argv( i) String::== "-f")
+    {
+      filter = argv( i+1);
+    }
+    else if(argv( i) String::== "-v")
+    {
+      stats = true;
+    }
+  }
+ 
+
+  if( argc() == 1 || filter == "")
+  {
+    printf( "\nImage Filters"
+            "\n==============================================================="
+            "\nUsage: %s -f <filter> [-c <count> -i <input> -o <output> -v]"
+            "\n -f <filter> : name of one of the filters"
+            "\n -c <count>  : iteration count (default 1)"
+            "\n -i <input>  : name of input file (default: stdin)"
+            "\n -o <output> : name of output file (default: stdout)"
+            "\n -v          : print timing information"
+            "\n"
+            "\n Valid filter names are: rotate90, fliph, flipv, invert, blur9, blur25, sobel, sharpen"
+            "\n\n", argv( 0));
+  }
+  else
+  {
+    if( stats)
+    {
+      fprintf( stderr,
+              "---------------------------------------------------------------\n"
+              " Iterations: %d\n"
+              " Input:      \"%s\"\n"
+              " Output:     \"%s\"\n"
+              " Filter:     %s\n"
+              "\n",
+              iterations,
+              input,
+              output,
+              filter);
+    }
+
+
+    if( input == "")
+    {
+      image = readPPM();
+    }
+    else
+    {
+      image = readPPM( input);
+    }
+
+
+    timer = createRTimer();
+    startRTimer( timer);
+
+    if(filter == "")
+    {
+      iterations = 1;
+    }
+
+
+    else if( filter == "rotate90")
+    {
+      for( i = 0; i < iterations; i++)
+      {
+        image = rotate90( image);
+      }
+    }
+    else if( filter == "fliph")
+    {
+      for( i = 0; i < iterations; i++)
+      {
+        image = fliph( image);
+      }
+    }
+    else if( filter == "flipv")
+    {
+      for( i = 0; i < iterations; i++)
+      {
+        image = flipv( image);
+      }
+    }
+    else if( filter == "invert")
+    {
+      for( i = 0; i < iterations; i++)
+      {
+        image = invert( image);
+      }
+    }
+    else if( filter == "blur9")
+    {
+      for( i = 0; i < iterations; i++)
+      {
+        image = blur9(image);
+      }
+    }
+    else if( filter == "blur25")
+    {
+      for( i = 0; i < iterations; i++)
+      {
+        image = blur25(image);
+      }
+    }
+    else if( filter == "sobel")
+    {
+      for( i = 0; i < iterations; i++)
+      {
+        image = sobel( image);
+      }
+    }
+    else if( filter == "sharpen")
+    {
+      for( i = 0; i < iterations; i++)
+      {
+        image = sharpen( image);
+      }
+    }
+    else
+    {
+      fprintf( stderr, "\nInvalid filter\n\n");
+    }
+
+
+    stopRTimer( timer);
+
+
+    if( output == "")
+    {
+      printPPM( image);
+    }
+    else
+    {
+      printPPM( image, output, true);
+    }
+
+    if( stats)
+    {
+      time = getRTimerDbl( timer);  
+
+      fprintf( stderr,
+              " Seconds:    %f\n"
+              "---------------------------------------------------------------\n",
+              time);
+    }
+
+    destroyRTimer( timer);
+  }
+
+  return(0);
+}
