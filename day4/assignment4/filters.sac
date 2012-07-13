@@ -41,7 +41,13 @@ color[.,.] rotate90( color[.,.] image)
 /* Flip an image along the horizontal axis */
 color[.,.] fliph( color[.,.] image)
 {
-  return( image);
+  a = [shape(image)[1], shape(image)[0]];
+
+  res = with {
+    ( . <= [i,j] <= . ) : image[j,i];
+  }: genarray (a, black());
+
+  return(res);
 }
 
 
