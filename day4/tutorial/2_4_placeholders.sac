@@ -1,0 +1,19 @@
+use StdIO: all;
+use Array: all;
+
+int main() {
+  a = [1,2,3,4];
+
+  printf("A org\n");
+  print(a);
+
+  b = modarray(a, [0], 9);
+
+  printf("A after mod\n");
+  print(a);
+
+  printf("B\n");
+  print(b);
+
+  return(0);
+}

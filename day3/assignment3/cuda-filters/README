@@ -1,0 +1,2 @@
+Place here your CUDA code for the filters application.
+Note that you have to parallize the application with CUDA OR OpenCL, not both!

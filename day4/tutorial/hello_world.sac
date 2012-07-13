@@ -1,0 +1,7 @@
+use StdIO: all;
+use Array: all;
+
+int main() {
+  printf("Hallo\n");
+  return(0);
+}

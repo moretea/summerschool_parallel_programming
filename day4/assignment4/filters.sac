@@ -1,5 +1,5 @@
 /*
- * Image filter skeletons file
+ n* Image filter skeletons file
  *
  * Below are empty filter functions which you can fill in.
  * The rotate function is already given as an example.
@@ -41,7 +41,13 @@ color[.,.] rotate90( color[.,.] image)
 /* Flip an image along the horizontal axis */
 color[.,.] fliph( color[.,.] image)
 {
-  return( image);
+  a = [shape(image)[1], shape(image)[0]];
+
+  res = with {
+    ( . <= [i,j] <= . ) : image[j,i];
+  }: genarray (a, black());
+
+  return(res);
 }
 
 
@@ -162,6 +168,7 @@ int main()
 
   if( argc() == 1 || filter == "")
   {
+#ifndef CUDA
     printf( "\nImage Filters"
             "\n==============================================================="
             "\nUsage: %s -f <filter> [-c <count> -i <input> -o <output> -v]"
@@ -173,11 +180,13 @@ int main()
             "\n"
             "\n Valid filter names are: rotate90, fliph, flipv, invert, blur9, blur25, sobel, sharpen"
             "\n\n", argv( 0));
+#endif
   }
   else
   {
     if( stats)
     {
+#ifndef CUDA
       fprintf( stderr,
               "---------------------------------------------------------------\n"
               " Iterations: %d\n"
@@ -189,6 +198,7 @@ int main()
               input,
               output,
               filter);
+#endif
     }
 
 
@@ -198,7 +208,9 @@ int main()
     }
     else
     {
-      image = readPPM( input);
+/*      printf("Input file: %s\n", input); */
+      image = readPPM(input);
+/*      print(image); */
     }
 
 
@@ -269,7 +281,9 @@ int main()
     }
     else
     {
+#ifndef CUDA
       fprintf( stderr, "\nInvalid filter\n\n");
+#endif
     }
 
 
@@ -289,10 +303,12 @@ int main()
     {
       time = getRTimerDbl( timer);  
 
+#ifndef CUDA
       fprintf( stderr,
               " Seconds:    %f\n"
               "---------------------------------------------------------------\n",
               time);
+#endif
     }
 
     destroyRTimer( timer);

@@ -1,0 +1,23 @@
+CUDA assignment for the Multimoore summerschool 2012
+
+Content:
+
+- cuda-documentation    This is where the official CUDA documentation is. Especially look at CUDA_C_Programming_Guide.pdf.
+
+- vector-add            Contains a very simple CUDA example program that just adds two vectors.
+
+- seq-filters		Contains the sequential version of the filter pipeline.
+			For timing, you can use the provided timer.cc class, or make your 
+			own time measurements. Be sure, however, that you use a timer with 
+			enough resolution. 			
+
+- input-images		Contains the proposed image set.
+
+- cuda-filters		A CUDA framework for the application, please modify/parallelize the code in this directory.
+			
+- bin			Contains a sanity-check program (comparison with expected output).
+			The source of this program is also given, in the seq-filters directory.
+                        It compares the output of your accelerated version with the output of 
+			the sequential one. It also writes a result image, which is a diff between the two.
+                        The check MUST report exactly 0 errors, since a very large tolerance for floating point 
+                        accuracy problems is already built in.
